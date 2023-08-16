@@ -5,9 +5,9 @@ const matter = require('gray-matter')
 
 async function generate() {
   const feed = new RSS({
-    title: 'Rajdeep Singh -- demo blog built with nextra and nextjs',
-    site_url: 'https://frontendweb3.github.io/nextra-blog/',
-    feed_url: 'https://frontendweb3.github.io/nextra-blog/feed.xml'
+    title: 'Emre Degirmenci -- blog built with nextjs',
+    site_url: 'https://emrdgrmnci.github.io/nextra-blog/',
+    feed_url: 'https://emrdgrmnci.github.io/nextra-blog/feed.xml'
   })
 
   const posts = await fs.readdir(path.join(__dirname, '..', 'pages', 'posts'))

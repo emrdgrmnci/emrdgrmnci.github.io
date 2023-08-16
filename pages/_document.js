@@ -2,8 +2,8 @@ import { Html, Head, Main, NextScript } from "next/document";
 
 export default function Document() {
   const meta = {
-    title: "Demo blog create by Rajdeep singh",
-    description: "Clone and deploy your own Next.js-powered portfolio in minutes.",
+    title: "Blog created by Emre Degirmenci",
+    description: "",
     image: "https://assets.vercel.com/image/upload/q_auto/front/vercel/dps.png",
   };
 
