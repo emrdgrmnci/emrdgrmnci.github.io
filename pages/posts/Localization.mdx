@@ -1,14 +1,56 @@
 ---
 title: Faster localization using POEditor
 description: 
-date: 2023-08-15T08:35:28.178Z
+date: 2022-01-20T08:35:28.178Z
 tag: POEditor, Localization, iOS
 category: iOS Development
 image: images/technology.jpg
 author: Emre Degirmenci
 ---
-Localization is a very important step for mobile applications. Because it makes it possible to reach a wide range of customers. 🇩🇰🇳🇴🇫🇮🇸🇪🇮🇸🇵🇱🇱🇻 Even almost every people can speak English in Nordic countries, we’re supporting 7different Nordic languages in my company. We’re using POEditor for faster localization processes.
 
-In this article, I will explain how to add a language, export, and import localization files in a faster way. First of all, we have a String extension like this:
+Localization is a very important step for mobile applications. Because it makes it possible to reach a wide range of customers. 🇩🇰🇳🇴🇫🇮🇸🇪🇮🇸🇵🇱🇱🇻 
 
-When the new strings are added to the code base, “settings_title”.localized() then you need to add these new strings to Add the string to the English version of Supporting Files/Localizable.strings i.e.: Project_Directory/Project_Name/Sources/Locales/en.lproj/Localizable.strings and send to POEditor (either manually or automatically). Then someone(licensed translator) does the translation in POEditor manually. After that, you should be able to fetch them (either manually or automatically) from POEditor. How do we extract/import translations from/to POEditor automatically? We can either manually send the new strings to poeditor.com using fastlane translations_extract fastlane script or GitLab CI doing it for us automatically. After someone(licensed translator) does the translation in POEditor manually. After all of that has been done we can run the following command fastlane translations_import to fetch the new translations and check them into the codebase. Conclusion POEditor is a great localization tool to increase user experience and save time since you will be waiting for translations for the new strings.
+Even almost every people can speak English in Nordic countries, we’re supporting 7 different Nordic languages in my company. 
+
+We’re using POEditor for faster localization processes.
+
+https://poeditor.com
+
+In this article, I will explain how to add a language, export, and import localization files in a faster way. 
+
+First of all, we have a **String** extension like this:
+
+~~~
+extension String {
+    public func localized(_ bundle: Bundle = .locales) -> String {
+        NSLocalizedString(self, bundle: bundle, comment: "")
+    }
+}
+
+//Usage
+class Foo: UIViewController {
+    let title = "settings_title".localized()
+}
+~~~
+
+When the new strings are added to the code base, 
+
+~~~
+“settings_title”.localized()
+~~~
+
+then you need to add these new strings to
+
+~~~
+Add the string to the English version of Supporting Files/Localizable.strings i.e.: Project_Directory/Project_Name/Sources/Locales/en.lproj/Localizable.strings
+~~~
+
+and send to POEditor (either manually or automatically). Then someone (licensed translator) does the translation in POEditor manually. After that, you should be able to fetch them (either manually or automatically) from POEditor. 
+
+## How do we extract/import translations from/to POEditor automatically? 
+
+We can either manually send the new strings to poeditor.com using fastlane translations_extract fastlane script or GitLab CI doing it for us automatically. After someone(licensed translator) does the translation in POEditor manually. After all of that has been done we can run the following command fastlane translations_import to fetch the new translations and check them into the codebase. 
+
+## Conclusion 
+
+POEditor is a great localization tool to increase user experience and save time since you will be waiting for translations for the new strings.

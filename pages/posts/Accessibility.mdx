@@ -1,0 +1,102 @@
+---
+title: iOS Accessibility VoiceOver
+description: 
+date: 2022-01-29T08:35:28.178Z
+tag: iOS Accessibility ,VoiceOver
+category: iOS Development
+image: images/technology.jpg
+author: Emre Degirmenci
+---
+
+![Accessibility Inspector!](/images/access.png "Accessibility Inspector")
+
+## What is VoiceOver?
+
+As you guess disabled people use smartphone apps as well. Designing your apps with accessibility in mind helps everyone use them, including people with vision, or hearing disabilities.
+
+> [VoiceOver is a screen reader built into Apple Inc.’s macOS, iOS, tvOS, watchOS, and iPod operating systems. By using VoiceOver, the user can access their Macintosh or iOS device based on spoken descriptions and, in the case of the Mac, the keyboard.](https://en.wikipedia.org/wiki/VoiceOver) 
+
+## Why Accessibility?
+
+In my current company, we’re also supporting Accessibilities, especially VoiceOver. In our e-paper applications, we have active 2K blind users.
+- You’ll reach a larger group.
+- It feels good to know you’re making a noticeable difference in more people’s life.
+
+## How to Activate and Use VoiceOver?
+
+You can find detailed information about activation and usage of VoiceOver on iPhone on Apple’s website:
+https://support.apple.com/guide/iphone/iph3e2e415f/ios
+
+- **Single-tap** anywhere and VoiceOver will read information from the item’s accessibility attributes loudly.
+- **Single-swipe** left or right and VoiceOver will select the next visible accessibility item and read it loudly.
+- **Single-swipe** down to spell the focused item letter-by-letter.
+- **Double-tap** to select the specific item.
+- **Three-finger-swipe** left or right to navigate forward or backward in a page view.
+
+For the complete list of VoiceOver gestures, check out [Apple’s Learn VoiceOver gestures on iPhone](https://support.apple.com/guide/iphone/learn-voiceover-gestures-iph3e2e2281/ios). So now you know how VoiceOver works.
+
+## Accessibility Attributes
+
+An accessibility attribute has five properties:
+
+First of all, you should define the accessibility element of the UI element.
+
+<script src="https://gist.github.com/emrdgrmnci/3e07096b50a79530424809bda8428e52"></script>
+
+~~~ 
+titleLabel.isAccessibilityElement = true
+~~~
+
+1. **accessibilityLabel:** A concise way to identify the control or view.
+
+~~~
+titleLabel.accessibilityLabel = foo.title
+~~~
+
+2. **accessibilityTraits:** These describe the element’s state or behavior. A cell trait might be .button, for example.
+
+~~~
+cell.accessibilityTraits = .none
+cell.accessibilityTraits = .button
+cell.accessibilityTraits = .link
+cell.accessibilityTraits = .header
+cell.accessibilityTraits = .adjustable
+cell.accessibilityTraits = .allowsDirectInteraction
+cell.accessibilityTraits = .causesPageTurn
+cell.accessibilityTraits = .image
+cell.accessibilityTraits = .keyboardKey
+cell.accessibilityTraits = .notEnabled
+cell.accessibilityTraits = .playSound
+cell.accessibilityTraits = .searchField
+cell.accessibilityTraits = .startsMediaSession
+cell.accessibilityTraits = .staticText
+cell.accessibilityTraits = .selected
+cell.accessibilityTraits = .summaryElement
+cell.accessibilityTraits = .tabBar
+~~~
+
+3. **accessibilityHint:** Describes the action an element completes. For example:
+
+~~~
+playButton.accessibilityHint = "double_tap_to_pause"
+loginCell.accessibilityHint = "double_tap_to_log_out"
+~~~
+
+4. **accessibilityFrame:** The frame of the element within the screen, in the format of a CGRect. VoiceOver speaks the contents of the CGRect.
+
+5. **accessibilityValue:** The value of an element. For example, with a progress bar or a slider, the current value might read: 5 out of 100.
+
+## Using the Accessibility Inspector
+
+There’s a tool named Accessibility Inspector, which does the following:
+
+- Lets you check the accessibility attributes of UI elements in Inspection Mode.
+- Provides live previews of accessibility elements without leaving your app.
+- Supports all platforms including macOS, iOS, watchOS, and tvOS.
+
+To do all of these things, open it in the Xcode menu by navigating to **Xcode** ▸ **Open Developer Tool** ▸ **Accessibility Inspector**.
+
+![Accessibility Inspector!](/images/access-ss.png "Accessibility Inspector")
+
+## Conclusion
+You learned about VoiceOver. You used the Accessibility Inspector to perform audits by scrolling through every accessible element. See you 🖖🏼
