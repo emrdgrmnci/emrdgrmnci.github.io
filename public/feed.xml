@@ -2,7 +2,7 @@
     <channel>
         <generator>RSS for Node</generator>
         <lastBuildDate>Mon, 09 Jan 2023 08:01:53 GMT</lastBuildDate>
-        <atom:link href="https://frontendweb3.github.io/nextra-blog/feed.xml" rel="self" type="application/rss+xml"/>
+        <atom:link href="https://emrdgrmnci.github.io/nextra-blog/feed.xml" rel="self" type="application/rss+xml"/>
         <item>
             <title><![CDATA[Faster localization using POEditor]]></title>
             <description><![CDATA[]]></description>
