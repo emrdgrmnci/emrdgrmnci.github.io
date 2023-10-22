@@ -1,20 +1,30 @@
+---
+title: Map Annotation Clustering in iOS 17
+description: 
+date: 2023-10-22T22:35:28.178Z
+tag: SwiftUI, Map, iOS 17, Clustering
+category: iOS Development
+image: images/technology.jpg
+author: Emre Degirmenci
+---
+
 High Performance Map Annotation Clustering in iOS 17 with SwiftUI Map()
 
-Introduction:
+## Introduction:
 
 Map annotation clustering is a technique used to group nearby annotations on a map into a single cluster, which is represented by a single annotation. This is important for improving performance and user experience, especially when dealing with large datasets. Without clustering, a map with many annotations can become cluttered and difficult to read, leading to a poor user experience. Clustering reduces the number of annotations displayed on the map, making it easier to read and improving performance by reducing the amount of data that needs to be rendered.
 
-Overview of Map Annotation Clustering
+## Overview of Map Annotation Clustering
 
-First of all I got a lot of help from this open-source project (https://github.com/vospennikov/ClusterMap) in order to implement map annotation clustering in iOS 17 SwiftUI Map(). I highly recommend checking it out if you want to learn more about how it works.
+First of all, I got a lot of help from this open-source project **(https://github.com/vospennikov/ClusterMap)** in order to implement map annotation clustering in iOS 17 SwiftUI Map(). I highly recommend checking it out if you want to learn more about how it works.
 
-Difference between working with UIKit Map and SwiftUI Map
+## Difference between working with UIKit Map and SwiftUI Map
 
 In terms of data handling and performance, ClusterMap library provides a solution for implementing map annotation clustering in SwiftUI Map() by changing the data structure from an array or dictionary to a tree.
 
 The most critical difference from the native implementation in UIKit is that the ClusterMap library handles adding data asynchronously, avoiding lags when adding significant quantities of data. In contrast, Apple handles adding data to the MainThread, which can cause lags when scrolling or zooming. The library requires the dimensions of the grid used in clustering to be provided through a custom configuration object. This allows for custom configuration of the grid size used in clustering, improving performance during scrolling or zooming. While Apple's implementation is more straightforward, the performance issue could be critical (e.g. Memory usage reduced from ~500 MB to ~230 MB).
 
-Integration with SwiftUI Map
+## Integration with SwiftUI Map
 
 When working with iOS 17, the library can be placed in an object marked with the @Observable macro and added to the hierarchy via the .environment modifier. The map will automatically reload when needed, such as when the camera position changes, and annotations can be added or removed in any other views.
 In my case I was trying to MKLocalSearch to search for places and display them on the map through a tabbar button.  
@@ -212,11 +222,11 @@ There is a ForEach loop that iterates over the `searchClient.annotations` array 
 Similarly, there is another ForEach loop that iterates over the `searchClient.clusters` array (which are the second elements of the tree). For each cluster, a Marker view is created and displayed on the map. The Marker represents a cluster of locations and includes the count of locations in the cluster, a system image, and a coordinate.
 The mapView also includes various modifiers and event handlers. For example, the readSize modifier is used to update the searchClient's mapSize property when the size of the map view changes. The onChange event handler is used to perform actions when the selectedResult changes, such as getting directions and showing or hiding a bottom sheet.
 
-Performance Benefits of ClusterMap
+## Performance Benefits of ClusterMap
 
 ![Memory!](/images/memory-1.png "Memory Usage with Clustering")
 ![Memory!](/images/memory-2.png "Memory Usage without Clustering")
 
 ...and so many other hangs, hitchs, and lags that I was experiencing with the native MapKit implementation which I couldn't add the Xcode Instruments screenshots.
 
-Overall, the project demonstrates how the combination of SwiftUI Map, ClusterMap, and other technologies can be used to create a performant and customizable map view in iOS 17. "Thanks Apple 🤣" By following best practices for implementing map annotation clustering, such as using a third-party library and providing custom configuration for the grid size, you can create a better user experience and improve the performance of your MapKit projects. See you ✌🏼
+## Overall, the project demonstrates how the combination of SwiftUI Map, ClusterMap, and other technologies can be used to create a performant and customizable map view in iOS 17. "Thanks Apple 🤣" By following best practices for implementing map annotation clustering, such as using a third-party library and providing custom configuration for the grid size, you can create a better user experience and improve the performance of your MapKit projects. See you ✌🏼
