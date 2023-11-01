@@ -174,45 +174,6 @@ In Swift Concurrency, a Task represents a unit of work. There are two types of t
 
 ## Example
 
-GitHub Copilot: Sure, here's an example of how you can use Structured Concurrency in Swift:
-
-```swift
-import Foundation
-
-// Define a function that simulates a long-running task
-func longRunningTask() async -> Int {
-    print("Starting long running task...")
-    await Task.sleep(2 * 1_000_000_000)  // Sleep for 2 seconds
-    print("Long running task finished.")
-    return 42
-}
-
-// Define a function that uses structured concurrency to run the long-running task
-func runTask() async {
-    let result = await withTaskGroup(of: Int.self) { group -> Int in
-        // Spawn a new child task
-        group.spawn {
-            await longRunningTask()
-        }
-
-        // Wait for all child tasks to finish and collect the results
-        var total = 0
-        for await result in group {
-            total += result
-        }
-        return total
-    }
-    print("Result: \(result)")
-}
-
-// Run the task
-Task {
-    await runTask()
-}
-```
-
-## Example
-
 In this example, `withTaskGroup` is used to create a new task group. Inside the task group, a new child task is spawned to run the `longRunningTask` function. 
 The `for await` loop is used to wait for all child tasks to finish and collect their results. 
 The result of the task group is the sum of the results of all child tasks. 
