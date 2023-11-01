@@ -1,6 +1,20 @@
+---
+title: Swift Concurrency Notes
+description: 
+date: 2023-11-01T18:50:28.178Z
+tag: Swift, Concurrency, Thread, Task, MainActor, Structured Concurrency, Unstructured Concurrency
+category: iOS Development
+image: images/technology.jpg
+author: Emre Degirmenci
+---
+
+In this article, I will share my insights about Donny Wals's presentation in iOS Conf SG 2023.
+
 # Swift Concurrency Notes 🧵
 
 ## **@MainActor**
+
+- The @MainActor attribute in Swift is used to ensure that certain parts of your code always run on the main thread. This is particular useful in SwiftUI, where UI updates must be performed on the main thread.
 
 - SwiftUI views are implicit **@MainActors** when they have **@ObservableObject** properties like @StateObject, @ObservedObject and @EnvironmentObject
 
@@ -44,8 +58,9 @@ await MainActor.run {
 
 ```swift
 class MyViewModel: ObservableObject {
+  // this will always run on the Global executor
    func performSomeWork() async {
-      // this will always run on the Global executor
+      
     }
 }
 ```
@@ -54,8 +69,8 @@ class MyViewModel: ObservableObject {
 
 ```swift
 class MyViewModel: ObservableObject {
+  // this will always run on the Main actor / thread
   @MainActor func performSomeWork() async {
-     // this will always run on the Main actor / thread
 
   }
 }
@@ -66,8 +81,9 @@ class MyViewModel: ObservableObject {
 ```swift
 @MainActor
 class MyViewModel: ObservableObject {
+  // this will _not_ run on the Main actor / thread
   nonisolated func performSomeWork() async {
-    // this will _not_ run on the Main actor / thread
+  
   }
 }
 ```
@@ -94,11 +110,12 @@ var body: some View {
    }
  }
 
-private func someExpensiveOperation() async {
-  **// Where does this function work?** 
+**Where does this function work?** 
 	// Since usage of @StateObject, @ObservedObject and @EnvironmentObject properties
   // Struct gains implicit MainActor behaviour. 
   // So, the answer is this function also work on **Main actor / thread**
+private func someExpensiveOperation() async {
+  
  }
 }
 ```
@@ -116,6 +133,8 @@ Recap:
 ---
 
 ## Task
+
+In Swift Concurrency, a Task represents a unit of work. There are two types of tasks: unstructured and detached. Unstructured tasks inherit parts of their creation context, but they are not child tasks of their creation context. Detached tasks, on the other hand, do not inherit anything. Both types of tasks can work in parallel with other tasks and do not interact with other tasks.
 
 - Creating an **unstructured** Task
     
@@ -153,7 +172,86 @@ Recap:
 - Unstructured tasks can be live out of scope.
 - In Unstructured tasks, child tasks no longer live than parent tasks. When the parent task is over all related children tasks will be over as well.
 
-## Examples
+## Example
+
+GitHub Copilot: Sure, here's an example of how you can use Structured Concurrency in Swift:
+
+```swift
+import Foundation
+
+// Define a function that simulates a long-running task
+func longRunningTask() async -> Int {
+    print("Starting long running task...")
+    await Task.sleep(2 * 1_000_000_000)  // Sleep for 2 seconds
+    print("Long running task finished.")
+    return 42
+}
+
+// Define a function that uses structured concurrency to run the long-running task
+func runTask() async {
+    let result = await withTaskGroup(of: Int.self) { group -> Int in
+        // Spawn a new child task
+        group.spawn {
+            await longRunningTask()
+        }
+
+        // Wait for all child tasks to finish and collect the results
+        var total = 0
+        for await result in group {
+            total += result
+        }
+        return total
+    }
+    print("Result: \(result)")
+}
+
+// Run the task
+Task {
+    await runTask()
+}
+```
+
+## Example
+
+In this example, `withTaskGroup` is used to create a new task group. Inside the task group, a new child task is spawned to run the `longRunningTask` function. 
+The `for await` loop is used to wait for all child tasks to finish and collect their results. 
+The result of the task group is the sum of the results of all child tasks. 
+This is an example of structured concurrency because the parent task (the task group) cannot finish until all its child tasks have finished.
+
+```swift
+// Define a function that simulates a long-running task
+func longRunningTask() async -> Int {
+    print("Starting long running task...")
+    await Task.sleep(2 * 1_000_000_000)  // Sleep for 2 seconds
+    print("Long running task finished.")
+    return 42
+}
+
+// Define a function that uses structured concurrency to run the long-running task
+func runTask() async {
+    let result = await withTaskGroup(of: Int.self) { group -> Int in
+        // Spawn a new child task
+        group.spawn {
+            await longRunningTask()
+        }
+
+        // Wait for all child tasks to finish and collect the results
+        var total = 0
+        for await result in group {
+            total += result
+        }
+        return total
+    }
+    print("Result: \(result)")
+}
+
+// Run the task
+Task {
+    await runTask()
+}
+```
+
+## Example
 
 ```swift
 // safe because whole class (including both property and method) is actor-isolated; `Task {…}` will be actor isolated, too
@@ -195,5 +293,6 @@ class SafeViewController: UIViewController {
 }
 ```
 
-## Source:
-[Textalk Media](https://www.youtube.com/watch?v=zgCtube1DSg)
+## Sources:
+[Your Brain 🧠 on Swift Concurrency - iOS Conf SG 2023](https://www.youtube.com/watch?v=zgCtube1DSg)
+[Mutating a mutable Struct within a Swift Task](https://stackoverflow.com/a/76868102/4442254)
