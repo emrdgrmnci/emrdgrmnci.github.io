@@ -1,0 +1,199 @@
+# Swift Concurrency Notes 🧵
+
+## **@MainActor**
+
+- SwiftUI views are implicit **@MainActors** when they have **@ObservableObject** properties like @StateObject, @ObservedObject and @EnvironmentObject
+
+```swift
+struct MyView: View {
+ @StateObject var vm = MyViewModel()
+
+ var body: some View {
+   Button {
+     Task {
+        await performSomeWork()
+      }
+    } label: {
+      Text("Test")
+      }
+   }
+}
+```
+
+<aside>
+💡 await doesn’t block current thread. It allows suspension of the current task. Essentially, we just say I’m gonna wait a lil bit, so let other things happen on main thread while I’m doing that long-term process like heavy network things.
+
+</aside>
+
+```swift
+func someVerySlowOperation() async {
+   // this takes a while...
+} 
+
+await MainActor.run {
+  await someVerySlowOperation()
+}
+```
+
+- How can we know the current task is not on main thread?
+
+<aside>
+💡 The system doesn’t care where you call sth from. Instead, functions decide where should call
+
+</aside>
+
+```swift
+class MyViewModel: ObservableObject {
+   func performSomeWork() async {
+      // this will always run on the Global executor
+    }
+}
+```
+
+- Changing the execution context
+
+```swift
+class MyViewModel: ObservableObject {
+  @MainActor func performSomeWork() async {
+     // this will always run on the Main actor / thread
+
+  }
+}
+```
+
+- Opting out of **MainActor** isolation
+
+```swift
+@MainActor
+class MyViewModel: ObservableObject {
+  nonisolated func performSomeWork() async {
+    // this will _not_ run on the Main actor / thread
+  }
+}
+```
+
+- Async functions will run on the global executor unless they were specifically instructed to not do that
+
+- Trickier example:
+    
+    <aside>
+    💡 SwiftUI Views get an implicit Main Actor annotation when they hold an ObservableObejct!
+    
+    </aside>
+    
+
+```swift
+struct ContentView: View {
+  @StateObject var myViewModel = MyViewModel()
+
+var body: some View {
+  Button("Test") {
+   	Task { 
+      await someExpensiveOperation()
+    }
+   }
+ }
+
+private func someExpensiveOperation() async {
+  **// Where does this function work?** 
+	// Since usage of @StateObject, @ObservedObject and @EnvironmentObject properties
+  // Struct gains implicit MainActor behaviour. 
+  // So, the answer is this function also work on **Main actor / thread**
+ }
+}
+```
+
+Recap: 
+
+🌟 Key rule: Functions run on the global executor unless otherwise specified.
+
+🌟 Mark method or enclosing object as @MainActor to enforce main actor
+
+🌟 Use nonisolated to **opt out** MainActor isolation
+
+🌟 SwiftUI views with ObservableObjects are implicitly @MainActor.
+
+---
+
+## Task
+
+- Creating an **unstructured** Task
+    
+    ```swift
+    Task {
+    // I'm an unstructured task
+    }
+    ```
+    
+- Creating a **detached** Task
+    
+    ```swift
+    Task.detached {
+     // I'm a detached task
+    }
+    ```
+    
+
+- **What happens when we create a Task…**
+
+🌟 Unstructured tasks inherits parts of their creation context.
+
+🌟 Unstructured tasks are not child tasks of their creation context.
+
+🌟 Detached tasks inherit nothing.
+
+🌟 Both tasks are their own islands of concurrency. They can work in parallel other with concurrent tasks. They don’t interact with other tasks which means only interact within their own islands.
+
+---
+
+## Structured concurrency relates to tasks and their children
+
+- Structured tasks cannot leave any uncompleted child tasks before it finishes.
+- All child tasks should be completed before the parent tasks completion in Structured tasks.
+- Unstructured tasks can be live out of scope.
+- In Unstructured tasks, child tasks no longer live than parent tasks. When the parent task is over all related children tasks will be over as well.
+
+## Examples
+
+```swift
+// safe because whole class (including both property and method) is actor-isolated; `Task {…}` will be actor isolated, too
+@MainActor
+class SafeActorIsolatedClassExample {
+    var foo = Foo(bar: "baz")
+    
+    func thisIsSafe() {
+        Task {
+            foo.bar = "qux"
+        }
+    }
+}
+
+// safe because both property and method are actor-isolated to same global actor; `Task {…}` will be actor isolated, too
+class SafeActorIsolatedPropertyAndMethodExample {
+    @MainActor var foo = Foo(bar: "baz")
+    
+    @MainActor func thisIsSafe() {
+        Task {
+            foo.bar = "qux"
+        }
+    }
+}
+
+// safe because `UIViewController` is actor-isolated to `@MainActor`, 
+// and therefore behaves like `SafeActorIsolatedClassExample`
+// @available(iOS 2.0, *)
+// @MainActor open class UIViewController :
+
+class SafeViewController: UIViewController {
+    var foo = Foo(bar: "baz")
+    
+    func thisIsSafe() {
+        Task {
+            foo.bar = "qux"
+        }
+    }
+}
+```
+
+## Source:
+[Textalk Media](https://www.youtube.com/watch?v=zgCtube1DSg)
