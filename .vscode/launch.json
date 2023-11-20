@@ -1,0 +1,10 @@
+{
+    "configurations": [
+        {
+            "type": "chrome",
+            "name": "https://emredegirmenci.me",
+            "request": "launch",
+            "url": "https://emredegirmenci.me"
+        }
+    ]
+}
