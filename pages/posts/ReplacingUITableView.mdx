@@ -1,0 +1,99 @@
+---
+title: Modernizing iOS Lists: From UITableView to UICollectionViewCompositionalLayout
+description: 
+date: 2024-07-14T10:50:28.178Z
+tag: Swift, UI, Layout, TableView
+category: iOS Development
+image: images/technology.jpg
+author: Emre Degirmenci
+---
+
+In the world of iOS development, UITableView has long been the go-to solution for displaying lists of data. However, with the introduction of UICollectionViewCompositionalLayout in iOS 13, developers now have a more flexible and powerful alternative. This post will guide you through the process of replacing UITableView with UICollectionViewCompositionalLayout, compare the two approaches, and explore some real-world scenarios where this transition makes sense.
+The Transition Process
+
+# Step 1: Replace UITableView with UICollectionView
+The first step is to replace your existing UITableView with a UICollectionView. This involves updating your view hierarchy and adjusting any constraints or layout code.
+
+```swift
+// Before
+let tableView = UITableView(frame: .zero, style: .plain)
+
+// After
+let collectionView = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
+```
+
+# Step 2: Create a Compositional Layout
+Next, create a compositional layout that mimics the structure of your table view. For a simple list, this might look like:
+
+```swift
+func createLayout() -> UICollectionViewLayout {
+    let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
+                                          heightDimension: .estimated(44))
+    let item = NSCollectionLayoutItem(layoutSize: itemSize)
+    
+    let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
+                                           heightDimension: .estimated(44))
+    let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
+    
+    let section = NSCollectionLayoutSection(group: group)
+    
+    return UICollectionViewCompositionalLayout(section: section)
+}
+
+collectionView.setCollectionViewLayout(createLayout(), animated: false)
+```
+
+# Step 3: Update Data Source
+With iOS 13, you can use the new UICollectionViewDiffableDataSource to manage your data:
+
+```swift
+tpealias DataSource = UICollectionViewDiffableDataSource<Section, Item>
+var dataSource: DataSource!
+
+func configureDataSource() {
+    let cellRegistration = UICollectionView.CellRegistration<UICollectionViewListCell, Item> { cell, indexPath, item in
+        var contentConfiguration = cell.defaultContentConfiguration()
+        contentConfiguration.text = item.title
+        cell.contentConfiguration = contentConfiguration
+    }
+    
+    dataSource = DataSource(collectionView: collectionView) { collectionView, indexPath, item in
+        return collectionView.dequeueConfiguredReusableCell(using: cellRegistration, for: indexPath, item: item)
+    }
+}
+```
+
+# Step 4: Update Delegate Methods
+
+Replace your UITableViewDelegate methods with their UICollectionViewDelegate equivalents:
+
+```swift
+// Before
+func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath)
+
+// After
+func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath)
+```
+
+# Pros and Cons
+## Pros of UICollectionViewCompositionalLayout
+
+- Flexibility: Create complex layouts easily, including grids, lists, and mixed layouts.
+- Performance: Optimized for smooth scrolling and efficient memory usage.
+- Consistency: Use the same view for both list and grid layouts.
+- Future-proof: Aligns with Apple's direction for UI development.
+
+## Cons of UICollectionViewCompositionalLayout
+
+- Learning curve: More complex API compared to UITableView.
+- iOS 13+ requirement: Not suitable for apps supporting earlier iOS versions.
+- Overkill for simple lists: May be unnecessary for basic, non-changing layouts.
+
+Conclusion
+While UITableView remains a solid choice for simple lists, UICollectionViewCompositionalLayout offers a more powerful and flexible solution for modern iOS apps. By embracing this new approach, developers can create more dynamic and responsive user interfaces that adapt to changing content and user needs.
+As you embark on this transition, remember that the initial investment in learning and implementation will pay off in the long run with more maintainable and versatile code. 
+
+See you on the next one!
+
+## Sources:
+[Apple Developer doc.](https://developer.apple.com/documentation/uikit/uicollectionviewcompositionallayout)
