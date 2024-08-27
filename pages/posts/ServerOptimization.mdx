@@ -1,0 +1,123 @@
+---
+title: "Optimizing Rate Limiting in Swift: A Step-by-Step Guide"
+description: ""
+date: 2024-08-27T09:43:11.178Z
+tag: "Swift, Server, Optimization"
+category: "iOS Development"
+image: "images/technology.jpg"
+author: "Emre Degirmenci"
+---
+
+In today's digital landscape, managing the flow of requests to your server is crucial, especially when dealing with high traffic. Rate limiting ensures that no single user or IP address overwhelms your system by sending too many requests in a short period. In this post, I'll walk you through creating an efficient rate-limiting algorithm in Swift, breaking down the code into simple steps.
+
+# Understanding the Problem
+
+Imagine you’re building a service that receives thousands of requests per second. To prevent abuse, you decide to limit the number of requests each IP address can make within a one-second window. Any additional requests beyond this limit should be rejected.
+
+To solve this, we need an algorithm that:
+
+- Tracks the number of requests made by each IP address.
+- Enforces the limit within a rolling one-second window.
+- Efficiently handles large volumes of data without slowing down.
+
+# The Initial Setup
+
+We start by defining a function that will take a list of requests and the rate limit (in requests per second). Each request contains an ID, an IP address, and a timestamp indicating when the request was made.
+
+```swift
+func rejectedRequests(requests: [String], limitPerSec: Int) -> [Int] {
+    var rejectedIndices: [Int] = []
+    var ipRequestCount: [String: [Int: Int]] = [:] // [IP: [Timestamp: Count]]
+```
+
+- **rejectedIndices:** An array that will store the IDs of requests that exceed the limit.
+- **ipRequestCount:** A dictionary to track how many requests each IP address has made at specific seconds.
+
+# Processing Each Request
+
+We loop through each request, splitting it into its ID, IP address, and timestamp.
+
+```swift
+for (index, request) in requests.enumerated() {
+    let parts = request.split(separator: " ")
+    guard parts.count == 3,
+          let id = Int(parts[0]),
+          let timestamp = Int(parts[2]) else {
+        continue // Skip malformed requests
+    }
+    let ip = String(parts[1])
+```
+
+- Guard Statement: Ensures the request is valid (it has exactly three parts, and the ID and timestamp are integers). If not, the request is skipped.
+
+# Tracking Requests by IP Address
+
+Next, we initialize tracking for each IP address if it hasn’t been seen before.
+
+```swift
+if ipRequestCount[ip] == nil {
+    ipRequestCount[ip] = [:]
+}
+```
+
+This step ensures that we have a place to store the count of requests for each timestamp associated with the IP address.
+
+# Cleaning Up Old Data
+
+To ensure our algorithm only considers requests made within the last second, we remove any timestamps that are too old.
+
+- Why Clean Up?: Old timestamps are irrelevant and could lead to incorrect calculations. Removing them keeps our data structure lean and focused only on recent activity.
+
+# Counting Requests in the Last Second
+
+We then sum up all the requests made by this IP address in the last second.
+
+```swift
+let requestInLastSecond = ipRequestCount[ip]!.values.reduce(0, +)
+```
+
+- This sum tells us how many requests have been made recently and helps us decide if the current request should be accepted or rejected.
+
+# Accepting or Rejecting Requests
+
+Based on the count, we either reject the request (if it exceeds the limit) or accept it and update our records.
+
+```swift
+if requestInLastSecond >= limitPerSecond {
+    rejectedIndices.append(id)
+} else {
+    ipRequestCount[ip]![timestamp, default: 0] += 1
+}
+```
+
+- **Rejected Requests:** If the sum of recent requests meets or exceeds the limit, the current request is rejected.
+- **Accepted Requests:** If the request count is below the limit, we add the current request to our tracking dictionary.
+
+# Returning the Rejected Requests
+
+Finally, after processing all requests, we return the list of rejected request IDs.
+
+```swift
+return rejectedIndices
+```
+
+# Testing the Function
+
+To ensure our function works correctly, we can test it with a few cases:
+
+```swift
+let test1 = rejectedRequests(requests: ["1 172.253.115.138 50000", "2 172.253.115.139 50100", "3 172.253.115.138 50210", "4 172.253.115.139 50300", "5 172.253.115.138 51000", "6 172.253.115.139 60300"], limitPerSecond: 1)
+print("Test 1 result:", test1) // Expected: [3, 4]
+
+let test2 = rejectedRequests(requests: ["10 172.253.115.138 50000", "20 172.253.115.138 50000", "30 172.253.115.138 50000"], limitPerSecond: 2)
+print("Test 2 result:", test2) // Expected: [30]
+
+let test3 = rejectedRequests(requests: ["1 172.253.115.138 50000", "2 172.253.115.138 50900", "3 172.253.115.138 51000", "4 172.253.115.138 51500"], limitPerSecond: 2)
+print("Test 3 result:", test3) // Expected: [4]
+```
+
+# Conclusion
+
+By following this approach, you can build a robust rate-limiting mechanism in Swift that efficiently handles large numbers of requests while ensuring no single IP address can flood your system. This method balances simplicity with performance, making it an ideal solution for real-world applications.
+
+Whether you're working on a backend server or building a mobile app, understanding and implementing rate limiting is crucial for maintaining system stability and preventing abuse. With this guide, you now have the tools to implement your own rate limiter in Swift, tailored to your specific needs. Happy coding!
